@@ -162,6 +162,21 @@ This means the server was already in the expected state and Ansible did not make
     │   └── wazuh-agent-check.yml
     └── site.yml
 
+
+## Screenshots
+
+### Ansible ping success
+
+![Ansible ping success](screenshots/ansible-ping-success.png)
+
+### Full site playbook validation
+
+![site.yml success](screenshots/site-yml-success.png)
+
+### Architecture diagram
+
+![GitHub README diagram](screenshots/github-readme-diagram.png)
+
 ## Skills Practiced
 
 - Ansible basics
