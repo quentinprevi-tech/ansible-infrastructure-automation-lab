@@ -1,0 +1,46 @@
+---
+- name: Verify web server services
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Check nginx service status
+      ansible.builtin.service_facts:
+
+    - name: Assert nginx service is running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['nginx.service'].state == 'running'
+        fail_msg: "nginx is not running"
+        success_msg: "nginx is running"
+
+    - name: Check if port 80 is listening
+      ansible.builtin.wait_for:
+        port: 80
+        host: 127.0.0.1
+        timeout: 5
+
+    - name: Check local HTTP response
+      ansible.builtin.uri:
+        url: http://127.0.0.1
+        status_code: 200
+      register: http_check
+
+    - name: Check Nginx custom access log exists
+      ansible.builtin.stat:
+        path: /var/log/nginx/web01_access.log
+      register: nginx_access_log
+
+    - name: Assert Nginx custom access log exists
+      ansible.builtin.assert:
+        that:
+          - nginx_access_log.stat.exists
+        fail_msg: "Nginx custom access log was not found"
+        success_msg: "Nginx custom access log exists"
+
+    - name: Display verification summary
+      ansible.builtin.debug:
+        msg:
+          - "nginx service: running"
+          - "HTTP status: {{ http_check.status }}"
+          - "Nginx access log: /var/log/nginx/web01_access.log"

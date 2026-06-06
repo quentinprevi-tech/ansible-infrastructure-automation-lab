@@ -1,0 +1,5 @@
+---
+- import_playbook: playbooks/linux-baseline.yml
+- import_playbook: playbooks/nginx-webserver.yml
+- import_playbook: playbooks/wazuh-agent-check.yml
+- import_playbook: playbooks/verify-services.yml

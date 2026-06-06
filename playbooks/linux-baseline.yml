@@ -1,0 +1,44 @@
+---
+- name: Apply Linux baseline configuration
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Update apt package cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install baseline packages
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - vim
+          - nano
+          - htop
+          - net-tools
+          - iputils-ping
+        state: present
+
+    - name: Show hostname
+      ansible.builtin.command: hostname
+      register: hostname_result
+      changed_when: false
+
+    - name: Show uptime
+      ansible.builtin.command: uptime
+      register: uptime_result
+      changed_when: false
+
+    - name: Show disk usage
+      ansible.builtin.command: df -h /
+      register: disk_result
+      changed_when: false
+
+    - name: Display baseline summary
+      ansible.builtin.debug:
+        msg:
+          - "Hostname: {{ hostname_result.stdout }}"
+          - "Uptime: {{ uptime_result.stdout }}"
+          - "Disk: {{ disk_result.stdout_lines }}"

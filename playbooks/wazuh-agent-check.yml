@@ -1,0 +1,49 @@
+---
+- name: Verify Wazuh agent on Linux servers
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Check if Wazuh agent package is installed
+      ansible.builtin.command: dpkg -l wazuh-agent
+      register: wazuh_package
+      changed_when: false
+      failed_when: wazuh_package.rc != 0
+
+    - name: Check Wazuh agent service status
+      ansible.builtin.service_facts:
+
+    - name: Assert Wazuh agent service is running
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['wazuh-agent.service'].state == 'running'
+        fail_msg: "wazuh-agent service is not running"
+        success_msg: "wazuh-agent service is running"
+
+    - name: Check Wazuh agent configuration file exists
+      ansible.builtin.stat:
+        path: /var/ossec/etc/ossec.conf
+      register: wazuh_config
+
+    - name: Assert Wazuh agent configuration exists
+      ansible.builtin.assert:
+        that:
+          - wazuh_config.stat.exists
+        fail_msg: "Wazuh ossec.conf was not found"
+        success_msg: "Wazuh ossec.conf exists"
+
+    - name: Check configured Wazuh manager address
+      ansible.builtin.command: grep -q "10.10.20.50" /var/ossec/etc/ossec.conf
+      changed_when: false
+
+    - name: Check Nginx custom log path is monitored by Wazuh
+      ansible.builtin.command: grep -q "/var/log/nginx/web01_access.log" /var/ossec/etc/ossec.conf
+      changed_when: false
+
+    - name: Display Wazuh agent validation summary
+      ansible.builtin.debug:
+        msg:
+          - "Wazuh agent package: installed"
+          - "Wazuh agent service: running"
+          - "Wazuh manager: 10.10.20.50"
+          - "Monitored Nginx log: /var/log/nginx/web01_access.log"

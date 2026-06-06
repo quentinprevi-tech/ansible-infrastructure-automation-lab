@@ -1,0 +1,97 @@
+---
+- name: Configure Nginx web server
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: true
+
+    - name: Create custom web root
+      ansible.builtin.file:
+        path: /var/www/web01
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Deploy custom index page
+      ansible.builtin.copy:
+        dest: /var/www/web01/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>web01 - Managed by Ansible</title>
+          </head>
+          <body>
+              <h1>web01 - Managed by Ansible</h1>
+              <p>This Debian/Nginx server is configured using Ansible.</p>
+              <p>Deployed from ansible-control01.</p>
+          </body>
+          </html>
+
+    - name: Deploy Nginx site configuration
+      ansible.builtin.copy:
+        dest: /etc/nginx/sites-available/web01
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          server {
+              listen 80;
+              server_name web01.homelab.local 10.10.30.10;
+
+              root /var/www/web01;
+              index index.html;
+
+              access_log /var/log/nginx/web01_access.log;
+              error_log /var/log/nginx/web01_error.log;
+
+              location / {
+                  try_files $uri $uri/ =404;
+              }
+          }
+      notify: Restart nginx
+
+    - name: Enable web01 site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/web01
+        dest: /etc/nginx/sites-enabled/web01
+        state: link
+        force: true
+      notify: Restart nginx
+
+    - name: Remove default Nginx site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart nginx
+
+    - name: Ensure nginx is enabled and running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Test local HTTP response
+      ansible.builtin.uri:
+        url: http://127.0.0.1
+        status_code: 200
+      register: nginx_test
+
+    - name: Display Nginx validation result
+      ansible.builtin.debug:
+        msg: "Nginx validation status: {{ nginx_test.status }}"
+
+  handlers:
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
