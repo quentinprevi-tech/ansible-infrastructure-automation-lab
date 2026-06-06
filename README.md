@@ -42,6 +42,31 @@ Flow:
 
 The managed server is located in the DMZ network, while the control node is located in the SERVERS network.
 
+
+## Architecture Diagram
+
+```mermaid
+flowchart TD
+    WIN11["win11-client-lab<br/>Windows 11<br/>10.10.10.105"]
+    CTRL["ansible-control01<br/>Ansible control node<br/>10.10.20.60"]
+    WEB["web01<br/>Debian / Nginx<br/>10.10.30.10"]
+    WAZUH["wazuh-siem01<br/>Wazuh SIEM<br/>10.10.20.50"]
+    FW["OPNsense<br/>LAN / SERVERS / DMZ routing"]
+
+    WIN11 -- "SSH administration" --> CTRL
+    CTRL -- "SSH + Ansible playbooks" --> WEB
+    WEB -- "Wazuh agent logs<br/>Linux + Nginx" --> WAZUH
+
+    CTRL --> FW
+    WEB --> FW
+    WAZUH --> FW
+
+    CTRL -- "Runs site.yml" --> WEB
+    CTRL -- "Validates nginx, HTTP 200,<br/>Wazuh agent and log paths" --> WEB
+```
+
+The diagram shows how the Ansible control node manages the Debian/Nginx server over SSH and validates its services and Wazuh agent configuration.
+
 ## Inventory
 
 The inventory file defines the managed servers.
