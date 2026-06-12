@@ -152,16 +152,17 @@ This means the server was already in the expected state and Ansible did not make
 
 ## Project Structure
 
-    .
-    ├── ansible.cfg
-    ├── inventory.ini
-    ├── playbooks
-    │   ├── linux-baseline.yml
-    │   ├── nginx-webserver.yml
-    │   ├── verify-services.yml
-    │   └── wazuh-agent-check.yml
-    └── site.yml
-
+```text
+.
+|-- ansible.cfg
+|-- inventory.ini
+|-- playbooks
+|   |-- linux-baseline.yml
+|   |-- nginx-webserver.yml
+|   |-- verify-services.yml
+|   `-- wazuh-agent-check.yml
+`-- site.yml
+```
 
 ## Screenshots
 
@@ -192,7 +193,7 @@ This means the server was already in the expected state and Ansible did not make
 
 ## Status
 
-Project status: In progress.
+Project status: In progress, with the current scope validated.
 
 Current validation:
 
